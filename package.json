@@ -1,0 +1,46 @@
+{
+  "name": "@hgraph/config",
+  "version": "1.0.4",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "description": "Configuration management for Hypergraph",
+  "author": {
+    "name": "Rinto Jose",
+    "email": "rintoj@gmail.com"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./nestjs": "./dist/nestjs/index.js",
+    "./package.json": "./package.json"
+  },
+  "repository": "https://github.com/rintoj/hypergraph-storage.git",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint --fix && tsc -p . --noEmit && yarn prettier",
+    "prettier": "prettier --write \"**/src/**/*.{ts,tsx}\" -c",
+    "build": "rimraf dist && tsc -p .",
+    "semantic-release": "semantic-release"
+  },
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/node": "^18.7.16",
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-jest": "^27.0.4",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.7.1",
+    "rimraf": "^5.0.1",
+    "semantic-release": "^21.0.5",
+    "typescript": "^5.8.3"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "envalid": "^8.0.0"
+  }
+}
