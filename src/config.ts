@@ -19,9 +19,12 @@ dotenv.config({
   path: [(environmentMap as any)[process.env.NODE_ENV as string] as string, '.env'].filter(Boolean),
 })
 
+export function nodeEnv(choices: string[] = Object.keys(environmentMap)) {
+  return { NODE_ENV: str({ choices }) }
+}
+
 export function configureConfig<S>(spec: S): CleanedEnv<S> {
   return cleanEnv(process.env, {
-    NODE_ENV: str({ choices: Object.keys(environmentMap) }),
     ...spec,
   })
 }
@@ -29,14 +32,14 @@ export function configureConfig<S>(spec: S): CleanedEnv<S> {
 export {
   bool,
   email,
+  EnvError,
+  EnvMissingError,
   host,
   json,
+  makeValidator,
   num,
   port,
   str,
-  url,
   testOnly,
-  makeValidator,
-  EnvError,
-  EnvMissingError,
+  url,
 } from 'envalid'

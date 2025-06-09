@@ -13,6 +13,8 @@ errors at runtime.
 
 - **Type-safe Configurations:** Define the expected data type for each environment variable (e.g.,
   `port`, `string`, `boolean`, `url`).
+- **Built-in `NODE_ENV` Handling:** Quickly configure the standard `NODE_ENV` variable using
+  `nodeEnv()` with sensible defaults (`development`, `production`, `test`).
 - **Built-in Validators:** Ensures variables are in the correct format (e.g., `email`, `host`,
   `json`).
 - **Environment-aware Defaults:** Easily set different default values for development
@@ -45,9 +47,12 @@ application's configuration.
 **`src/config.ts`**
 
 ```typescript
-import { configureConfig, str, bool, port, num, email, url, json } from '@hgraph/config'
+import { configureConfig, str, bool, port, num, email, url, json, nodeEnv } from '@hgraph/config'
 
 export const config = configureConfig({
+  // Standard NodeJS environment
+  ...nodeEnv(),
+
   // Network and Server
   PORT: port({ devDefault: 3000, desc: 'The port the application will listen on.' }),
   SERVER_URL: url({ default: 'https://api.yourapp.com', example: 'https://api.yourapp.com' }),
@@ -117,6 +122,42 @@ Each validator function accepts an optional options object with the following pr
 | **`desc`**       | `string`        | A description of the environment variable.                                                                           |
 | **`example`**    | `string`        | An example value for the env var.                                                                                    |
 | **`docs`**       | `string`        | A URL that links to more detailed documentation.                                                                     |
+
+### Helper Functions
+
+#### `nodeEnv(options?)`
+
+A convenience function that provides a standard configuration for `NODE_ENV`. It should be spread
+into your `configureConfig` object.
+
+```typescript
+import { configureConfig, nodeEnv } from '@hgraph/config'
+
+export const config = configureConfig({
+  ...nodeEnv(),
+  // ... other variables
+})
+```
+
+By default, this is equivalent to:
+
+```typescript
+{
+  NODE_ENV: str({
+    choices: ['development', 'production', 'test'],
+    default: 'development',
+    desc: 'The environment the application is running in.',
+  })
+}
+```
+
+You can pass an options object to customize its behavior, for example, to allow more environments:
+
+```typescript
+...nodeEnv({
+  choices: ['development', 'production', 'test', 'staging']
+})
+```
 
 ---
 
