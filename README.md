@@ -47,9 +47,9 @@ application's configuration.
 **`src/config.ts`**
 
 ```typescript
-import { configureConfig, str, bool, port, num, email, url, json, nodeEnv } from '@hgraph/config'
+import { configure, str, bool, port, num, email, url, json, nodeEnv } from '@hgraph/config'
 
-export const config = configureConfig({
+export const config = configure({
   // Standard NodeJS environment
   ...nodeEnv(),
 
@@ -82,7 +82,7 @@ variables.
 
 ## How it Works
 
-The `configureConfig` function reads your environment variables from `process.env`. For each key you
+The `configure` function reads your environment variables from `process.env`. For each key you
 define, it will:
 
 1.  Look for a corresponding variable in `process.env`.
@@ -100,7 +100,7 @@ Node's `process.env` only stores strings. These functions validate and transform
 values into the correct types.
 
 | Function      | Description                                                             | Parsing Rules                                                                 |
-| :------------ | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
+| :------------ | :---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | **`str()`**   | Ensures a string value is present. An empty string is considered valid. | `my-api-key`                                                                  |
 | **`bool()`**  | Parses the input into a boolean.                                        | `"true"`, `"1"`, `"t"` become `true`. `"false"`, `"0"`, `"f"` become `false`. |
 | **`num()`**   | Parses the input into a JavaScript `Number`.                            | `"42"`, `"0.23"`, `"1e5"`                                                     |
@@ -128,12 +128,12 @@ Each validator function accepts an optional options object with the following pr
 #### `nodeEnv(options?)`
 
 A convenience function that provides a standard configuration for `NODE_ENV`. It should be spread
-into your `configureConfig` object.
+into your `configure` object.
 
 ```typescript
-import { configureConfig, nodeEnv } from '@hgraph/config'
+import { configure, nodeEnv } from '@hgraph/config'
 
-export const config = configureConfig({
+export const config = configure({
   ...nodeEnv(),
   // ... other variables
 })
@@ -159,31 +159,10 @@ You can pass an options object to customize its behavior, for example, to allow 
 })
 ```
 
----
-
-## Custom Validators
+### Custom Validators
 
 You can easily create your own validator functions for custom logic using `makeValidator()`. A
 validator should either return a cleaned value or throw an error for invalid input.
-
-### Basic Usage (JavaScript)
-
-```javascript
-import { makeValidator, configureConfig } from '@hgraph/config'
-
-const twoChars = makeValidator(x => {
-  if (/^[A-Za-z]{2}$/.test(x)) return x.toUpperCase()
-  throw new Error('Expected two letters')
-})
-
-export const config = configureConfig({
-  INITIALS: twoChars({ example: 'AB' }),
-})
-```
-
-### For TypeScript Users
-
-Use `makeValidator<T>` to create a validator with a specific output type.
 
 ```typescript
 import { makeValidator } from '@hgraph/config'
@@ -197,9 +176,27 @@ const int = makeValidator<number>((input: string) => {
   return coerced
 })
 
-export const config = configureConfig({
+export const config = configure({
   // The output type of MAX_RETRIES will be narrowed to `1 | 2 | 3 | 4`
-  MAX_RETRIES: int({ choices: [1, 2, 3, 4] }),
+})
+```
+
+## Custom Validators
+
+For TypeScript users, `makeValidator<T>` allows you to create validators with specific output types.
+
+```typescript
+import { makeValidator } from '@hgraph/config'
+
+const twoChars = makeValidator<string>(({ input }) => {
+  if (/^[A-Za-z]{2}$/.test(input))) {
+    return input.toUpperCase()
+  }
+  throw new Error('Expected two letters')
+})
+
+export const config = configure({
+  INITIALS: twoChars({ example: 'AB' }),
 })
 ```
 
@@ -212,9 +209,9 @@ error message and call `process.exit(1)`. You can override this behavior by prov
 This is useful for sending errors to a monitoring service or for custom logging formats.
 
 ```typescript
-import { configureConfig, str, EnvError, EnvMissingError } from '@hgraph/config'
+import { configure } from '@hgraph/config'
 
-export const config = configureConfig(
+export const config = configure(
   {
     API_KEY: str(),
     DB_HOST: str(),
@@ -240,27 +237,13 @@ export const config = configureConfig(
 )
 ```
 
-## Advanced Usage
+## Changelog
 
-### `testOnly` Utility
+### v1.0.5
 
-For variables that should only have a default value during tests (`NODE_ENV=test`), you can use the
-`testOnly` helper. This is often combined with `devDefault`.
+- Update `configureConfig` to use `configure`.
+- Improved `dotenv` configuration loading for environment-specific `.env` files based on `NODE_ENV`.
 
-```typescript
-import { configureConfig, str, testOnly } from '@hgraph/config'
-
-export const config = configureConfig({
-  // devDefault will apply for dev and test.
-  // The testOnly value will *only* be used in test environments.
-  API_ENDPOINT: str({ devDefault: testOnly('http://localhost:1234/test-api') }),
-})
+```bash
+npm version patch
 ```
-
-### Custom Middleware with `customCleanEnv`
-
-For advanced use cases where you need to transform the final configuration object, you can use
-`customCleanEnv`. This allows you to apply your own middleware after validation.
-
-_Refer to the underlying `envalid` library's documentation for detailed examples of custom
-middleware._

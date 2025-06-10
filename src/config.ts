@@ -15,15 +15,16 @@ const environmentMap = {
   LOCAL: 'local',
 }
 
-dotenv.config({
-  path: [(environmentMap as any)[process.env.NODE_ENV as string] as string, '.env'].filter(Boolean),
-})
-
 export function nodeEnv(choices: string[] = Object.keys(environmentMap)) {
   return { NODE_ENV: str({ choices }) }
 }
 
-export function configureConfig<S>(spec: S): CleanedEnv<S> {
+export function configure<S>(spec: S): CleanedEnv<S> {
+  const path = [(environmentMap as any)[process.env.NODE_ENV as string] as string, '.env'].filter(
+    Boolean,
+  )
+  dotenv.config({ path })
+  console.log('Loading environment variables from: ', path.join(', '))
   return cleanEnv(process.env, {
     ...spec,
   })
