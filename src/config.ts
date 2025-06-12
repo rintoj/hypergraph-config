@@ -24,7 +24,6 @@ export function configure<S>(spec: S): CleanedEnv<S> {
     Boolean,
   )
   dotenv.config({ path })
-  console.log('Loading environment variables from: ', path.join(', '))
   return cleanEnv(process.env, {
     ...spec,
   })
