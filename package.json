@@ -1,6 +1,6 @@
 {
   "name": "@hgraph/config",
-  "version": "1.0.7",
+  "version": "0.0.0-development",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "Configuration management for Hypergraph",
@@ -35,12 +35,6 @@
   },
   "dependencies": {
     "dotenv": "^16.5.0",
-    "envalid": "^8.0.0",
-    "semantic-release": "^24.2.5"
-  },
-  "release": {
-    "branches": [
-      "main"
-    ]
+    "envalid": "^8.0.0"
   }
 }

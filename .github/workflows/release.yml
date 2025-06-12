@@ -23,7 +23,8 @@ jobs:
           node-version: '22.x'
       - run: yarn --pure-lockfile
       - run: yarn run build
-      - run: yarn run semantic-release
+      - run: npm version patch
+      - run: npm publish --access public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: git push --tags
