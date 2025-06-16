@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv'
 import { CleanedEnv, cleanEnv, str } from 'envalid'
+import { resolve } from 'path'
 
 const environmentMap = {
   prod: 'prod',
@@ -19,10 +20,19 @@ export function nodeEnv(choices: string[] = Object.keys(environmentMap)) {
   return { NODE_ENV: str({ choices }) }
 }
 
-export function configure<S>(spec: S): CleanedEnv<S> {
-  const path = [(environmentMap as any)[process.env.NODE_ENV as string] as string, '.env'].filter(
-    Boolean,
-  )
+export interface ConfigOptions {
+  baseDir?: string
+  showEnvironmentFiles?: string
+}
+
+export function configure<S>(spec: S, options?: ConfigOptions): CleanedEnv<S> {
+  const { baseDir = process.cwd(), showEnvironmentFiles } = options ?? {}
+  const path = [(environmentMap as any)[process.env.NODE_ENV as string] as string, '.env']
+    .filter(Boolean)
+    .map(config => resolve(baseDir, config))
+  if (showEnvironmentFiles) {
+    console.log('Environment files:', path.join(', '))
+  }
   dotenv.config({ path })
   return cleanEnv(process.env, {
     ...spec,

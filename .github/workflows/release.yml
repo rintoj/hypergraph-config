@@ -9,7 +9,6 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: true
 
-# Add permissions for gh release to create a release
 permissions:
   contents: write
 
@@ -18,11 +17,10 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Check out the code with full history
+      # Step 1: Check out the code with full git history
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Fetch all history for all tags and branches for versioning
           fetch-depth: 0
 
       # Step 2: Set up Node.js environment
@@ -30,13 +28,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://registry.npmjs.org' # Important for npm publish
 
       # Step 3: Install dependencies
       - name: Install dependencies
         run: yarn --pure-lockfile
 
-      # Step 4: Build the project
+      # Step 4: Build the project (if necessary)
       - name: Build project
         run: yarn run build
 
@@ -46,46 +44,46 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
 
-      # Step 6: Conditionally bump version, tag, and push
-      - name: Bump version based on commit message
+      # Step 6: Determine version and create local commit & tag
+      - name: Determine Version and Bump Locally
         id: versioning
         run: |
-          # Get the latest commit message
+          # Get the latest commit message to determine version type
           commit_message="${{ github.event.head_commit.message }}"
           echo "Last commit message: $commit_message"
 
-          # Determine version type
-          # If commit message starts with 'feat' or 'perf', it's a 'minor' release
-          # Otherwise, it's a 'patch'
+          # Default to 'patch' unless the commit is a 'feat' or 'perf'
           if echo "$commit_message" | grep -q -E '^(feat|perf)'; then
             version_type="minor"
-            echo "Bumping minor version."
+            echo "Commit type warrants a MINOR version bump."
           else
             version_type="patch"
-            echo "Bumping patch version."
+            echo "Commit type warrants a PATCH version bump."
           fi
 
-          # Bump the version using npm, which also creates a git commit and tag
+          # Bump the version using npm. This command updates package.json
+          # and creates a new git commit and tag LOCALLY.
           new_version=$(npm version $version_type)
-          echo "New version: $new_version"
+          echo "Bumped version to: $new_version"
 
-          # Set the new version as an output for other steps
+          # Set the new version as an output for subsequent steps
           echo "NEW_VERSION=$new_version" >> $GITHUB_OUTPUT
 
-          # Push the new commit and tag to the repository
-          git push
-          git push --tags
-
-      # Step 7: Publish the package to the npm registry
+      # Step 7: Publish to npm registry (The Gate)
+      # This step acts as a gate. If it fails, the following steps will not run.
       - name: Publish to npm
         run: npm publish --access public
         env:
-          # Use NODE_AUTH_TOKEN with setup-node's registry-url
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Step 8: Create a GitHub Release
+      # Step 8: Push the new commit and tag to the repository
+      # This step only runs if 'npm publish' was successful.
+      - name: Push Changes to Repository
+        run: git push --follow-tags
+
+      # Step 9: Create a GitHub Release
+      # This step also only runs if 'npm publish' was successful.
       - name: Create GitHub Release
         run: gh release create ${{ steps.versioning.outputs.NEW_VERSION }} --generate-notes
         env:
-          # The GITHUB_TOKEN is automatically provided by GitHub Actions
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
