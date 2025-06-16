@@ -48,33 +48,40 @@ application's configuration.
 
 ```typescript
 import { configure, str, bool, port, num, email, url, json, nodeEnv } from '@hgraph/config'
+import { resolve } from 'path'
 
-export const config = configure({
-  // Standard NodeJS environment
-  ...nodeEnv(),
+export const config = configure(
+  {
+    // Standard NodeJS environment
+    ...nodeEnv(),
 
-  // Network and Server
-  PORT: port({ devDefault: 3000, desc: 'The port the application will listen on.' }),
-  SERVER_URL: url({ default: 'https://api.yourapp.com', example: 'https://api.yourapp.com' }),
+    // Network and Server
+    PORT: port({ devDefault: 3000, desc: 'The port the application will listen on.' }),
+    SERVER_URL: url({ default: 'https://api.yourapp.com', example: 'https://api.yourapp.com' }),
 
-  // Database Configuration
-  DATABASE_URL: str({ docs: 'https://your-docs.com/db-config' }),
-  DATABASE_TYPE: str({ choices: ['postgres', 'mysql', 'sqlite'], default: 'postgres' }),
-  DB_SYNCHRONIZE: bool({ default: false, devDefault: true }),
+    // Database Configuration
+    DATABASE_URL: str({ docs: 'https://your-docs.com/db-config' }),
+    DATABASE_TYPE: str({ choices: ['postgres', 'mysql', 'sqlite'], default: 'postgres' }),
+    DB_SYNCHRONIZE: bool({ default: false, devDefault: true }),
 
-  // Application Settings
-  RETRY_COUNT: num({ default: 3, desc: 'Number of times to retry a failed operation.' }),
-  WEBSITE_URL: str({ default: 'https://yourapp.com' }),
-  GRAPHQL_PLAYGROUND: bool({ default: false, devDefault: true }),
+    // Application Settings
+    RETRY_COUNT: num({ default: 3, desc: 'Number of times to retry a failed operation.' }),
+    WEBSITE_URL: str({ default: 'https://yourapp.com' }),
+    GRAPHQL_PLAYGROUND: bool({ default: false, devDefault: true }),
 
-  // Security (use environment variables for these sensitive values)
-  JWT_SECRET: str({ devDefault: 'local-secret-for-development' }),
-  JWT_EXPIRY: str({ default: '15m' }),
+    // Security (use environment variables for these sensitive values)
+    JWT_SECRET: str({ devDefault: 'local-secret-for-development' }),
+    JWT_EXPIRY: str({ default: '15m' }),
 
-  // Third-Party Services
-  SUPPORT_EMAIL: email(),
-  FIREBASE_CONFIG: json({ desc: 'Firebase service account configuration.' }),
-})
+    // Third-Party Services
+    SUPPORT_EMAIL: email(),
+    FIREBASE_CONFIG: json({ desc: 'Firebase service account configuration.' }),
+  },
+  {
+    baseDir: resolve(__dirname, '..'),
+    showEnvironmentFiles: false,
+  },
+)
 ```
 
 Now you can import the `config` object throughout your application to access your configuration
@@ -177,7 +184,7 @@ const int = makeValidator<number>((input: string) => {
 })
 
 export const config = configure({
-  // The output type of MAX_RETRIES will be narrowed to `1 | 2 | 3 | 4`
+  RETRY: int(),
 })
 ```
 
@@ -239,10 +246,9 @@ export const config = configure(
 
 ## Changelog
 
-### v1.0.5
+### v1.0.9
 
-- Update `configureConfig` to use `configure`.
-- Improved `dotenv` configuration loading for environment-specific `.env` files based on `NODE_ENV`.
+- Downgrade version to 1.0.9.
 
 ```bash
 npm version patch
