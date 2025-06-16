@@ -22,7 +22,7 @@ export function nodeEnv(choices: string[] = Object.keys(environmentMap)) {
 
 export interface ConfigOptions {
   baseDir?: string
-  showEnvironmentFiles?: string
+  showEnvironmentFiles?: boolean
 }
 
 export function configure<S>(spec: S, options?: ConfigOptions): CleanedEnv<S> {
